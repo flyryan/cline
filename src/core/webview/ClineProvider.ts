@@ -17,6 +17,7 @@ import { findLast } from "../../shared/array"
 import { ExtensionMessage } from "../../shared/ExtensionMessage"
 import { HistoryItem } from "../../shared/HistoryItem"
 import { WebviewMessage } from "../../shared/WebviewMessage"
+import { COMMAND_REQ_APP_STRING } from "../../shared/combineCommandSequences"
 import { fileExistsAtPath } from "../../utils/fs"
 import { Cline } from "../Cline"
 import { openMention } from "../mentions"
@@ -499,6 +500,34 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						}
 
 						break
+					case "editCommand": {
+						// Show input box for editing the command
+						const editedCommand = await vscode.window.showInputBox({
+							value: message.command,
+							prompt: "Edit command",
+							placeHolder: "Enter command",
+							validateInput: text => {
+								if (!text) {
+									return "Command cannot be empty"
+								}
+								return null
+							}
+						})
+
+						if (editedCommand) {
+							// If the original command required approval (had COMMAND_REQ_APP_STRING),
+							// maintain that requirement for the edited command
+							const finalCommand = message.originalCommand?.endsWith(COMMAND_REQ_APP_STRING)
+								? editedCommand + COMMAND_REQ_APP_STRING
+								: editedCommand
+
+							// Update the command in the chat interface
+							if (this.cline) {
+								await this.cline.ask("command", finalCommand)
+							}
+						}
+						break
+					}
 					case "openMcpSettings": {
 						const mcpSettingsFilePath = await this.mcpHub?.getMcpSettingsFilePath()
 						if (mcpSettingsFilePath) {

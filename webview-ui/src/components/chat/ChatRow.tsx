@@ -535,7 +535,48 @@ export const ChatRowContent = ({
 						overflow: "hidden",
 						backgroundColor: CODE_BLOCK_BG_COLOR,
 					}}>
-					<CodeBlock source={`${"```"}shell\n${command}\n${"```"}`} forceWrap={true} />
+					<div style={{ position: 'relative' }}>
+						{/* Display the command in a code block */}
+						<CodeBlock source={`${"```"}shell\n${command}\n${"```"}`} forceWrap={true} />
+						
+						{/* Show edit button only when the message is asking for command approval */}
+						{message.type === "ask" && (
+							<div style={{
+								position: 'absolute',
+								top: '4px',
+								right: '4px',
+								display: 'flex',
+								gap: '4px'
+							}}>
+								{/* Edit button that triggers command editing mode */}
+								<button
+									className="codicon codicon-edit"
+									style={{
+										background: 'none',
+										border: 'none',
+										padding: '4px',
+										cursor: 'pointer',
+										color: 'var(--vscode-foreground)',
+										opacity: 0.7
+									}}
+									title="Edit command"
+									onClick={(e) => {
+										// Prevent click from affecting parent elements
+										e.stopPropagation();
+										
+										// Send message to extension to initiate command editing
+										// Includes both the processed command and original raw command
+										// to maintain context about approval requirements
+										vscode.postMessage({
+											type: "editCommand",
+											command: command,
+											originalCommand: rawCommand
+										});
+									}}
+								/>
+							</div>
+						)}
+					</div>
 					{output.length > 0 && (
 						<div style={{ width: "100%" }}>
 							<div

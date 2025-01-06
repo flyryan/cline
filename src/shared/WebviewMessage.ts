@@ -5,6 +5,7 @@ export interface WebviewMessage {
 	type:
 		| "apiConfiguration"
 		| "customInstructions"
+		| "editCommand" // Message sent when user wants to edit a command
 		| "webviewDidLaunch"
 		| "newTask"
 		| "askResponse"
@@ -32,6 +33,9 @@ export interface WebviewMessage {
 	images?: string[]
 	bool?: boolean
 	autoApprovalSettings?: AutoApprovalSettings
+	// Properties for command editing
+	command?: string      // The command to be edited
+	originalCommand?: string  // Original command with approval requirements
 }
 
 export type ClineAskResponse = "yesButtonClicked" | "noButtonClicked" | "messageResponse"
